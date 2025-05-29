@@ -1,95 +1,153 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  useMediaQuery,
+  useTheme,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { useSearchParams } from "next/navigation";
+import { useCategory } from "@/context/CategoryContext";
+import { useRouter } from "next/navigation";
+import dishes from "@/data/products";
+import CategorySidebar from "@/components/common/CategorySidebar";
+import ProductCard from "@/components/product/ProductCard";
 
-export default function Home() {
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+  subcategory?: string;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+export default function HomePage() {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const searchParams = useSearchParams();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>(dishes);
+  const { selectedCategory } = useCategory();
+  const router = useRouter();
+
+  // Filter products based on category, subcategory and search query
+  useEffect(() => {
+    let filtered = [...dishes];
+    const searchQuery = searchParams.get("q");
+
+    if (selectedCategory) {
+      // Check if we have a subcategory selection
+      const [mainCategory, subcategory] = selectedCategory.split("/");
+
+      if (subcategory) {
+        // Filter by subcategory
+        filtered = filtered.filter(
+          (product) =>
+            product.category === mainCategory &&
+            product.subcategory === subcategory
+        );
+      } else {
+        // Filter by main category only
+        filtered = filtered.filter(
+          (product) => product.category === mainCategory
+        );
+      }
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query)
+      );
+    }
+
+    setProducts(filtered);
+  }, [selectedCategory, searchParams]);
+
+  const handleCategorySelect = (categoryId: string | null) => {
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      {/* Main Content */}
+      <Container sx={{ flex: 1, py: 3 }}>
+        <Box sx={{ display: "flex", gap: 3 }}>
+          {/* Category Sidebar - Desktop */}
+          {isMdUp && (
+            <Box sx={{ width: 280, flexShrink: 0 }}>
+              <CategorySidebar />
+            </Box>
+          )}
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {/* Product Grid */}
+          <Box sx={{ flex: 1 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                },
+              }}
+            >
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  description={product.description}
+                  image={product.image}
+                />
+              ))}
+              {products.length === 0 && (
+                <Box
+                  sx={{
+                    gridColumn: "1/-1",
+                    textAlign: "center",
+                    py: 4,
+                  }}
+                >
+                  <Typography variant="h6" color="text.secondary">
+                    Không tìm thấy sản phẩm nào
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Container>
+
+      {/* Mobile Category Menu */}
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      >
+        <Box sx={{ width: 250 }}>
+          <CategorySidebar />
+        </Box>
+      </Drawer>
+    </Box>
   );
 }
