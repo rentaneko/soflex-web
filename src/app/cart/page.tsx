@@ -66,7 +66,7 @@ const CartPage = () => {
 
   const handleCheckout = () => {
     clearCart();
-    router.push("/payment-success");
+    router.push("/checkout");
   };
 
   // Calculate total price directly from cartItems
