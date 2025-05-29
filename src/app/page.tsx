@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   Box,
   Container,
@@ -86,68 +86,72 @@ export default function HomePage() {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      {/* Main Content */}
-      <Container sx={{ flex: 1, py: 3 }}>
-        <Box sx={{ display: "flex", gap: 3 }}>
-          {/* Category Sidebar - Desktop */}
-          {isMdUp && (
-            <Box sx={{ width: 280, flexShrink: 0 }}>
-              <CategorySidebar />
-            </Box>
-          )}
+    <Suspense fallback={<div>Loading...</div>}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
+        {/* Main Content */}
+        <Container sx={{ flex: 1, py: 3 }}>
+          <Box sx={{ display: "flex", gap: 3 }}>
+            {/* Category Sidebar - Desktop */}
+            {isMdUp && (
+              <Box sx={{ width: 280, flexShrink: 0 }}>
+                <CategorySidebar />
+              </Box>
+            )}
 
-          {/* Product Grid */}
-          <Box sx={{ flex: 1 }}>
-            <Box
-              sx={{
-                display: "grid",
-                gap: 2,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
-                },
-              }}
-            >
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  description={product.description}
-                  image={product.image}
-                />
-              ))}
-              {products.length === 0 && (
-                <Box
-                  sx={{
-                    gridColumn: "1/-1",
-                    textAlign: "center",
-                    py: 4,
-                  }}
-                >
-                  <Typography variant="h6" color="text.secondary">
-                    Không tìm thấy sản phẩm nào
-                  </Typography>
-                </Box>
-              )}
+            {/* Product Grid */}
+            <Box sx={{ flex: 1 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gap: 2,
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                  },
+                }}
+              >
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    description={product.description}
+                    image={product.image}
+                  />
+                ))}
+                {products.length === 0 && (
+                  <Box
+                    sx={{
+                      gridColumn: "1/-1",
+                      textAlign: "center",
+                      py: 4,
+                    }}
+                  >
+                    <Typography variant="h6" color="text.secondary">
+                      Không tìm thấy sản phẩm nào
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
           </Box>
-        </Box>
-      </Container>
+        </Container>
 
-      {/* Mobile Category Menu */}
-      <Drawer
-        anchor="left"
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      >
-        <Box sx={{ width: 250 }}>
-          <CategorySidebar />
-        </Box>
-      </Drawer>
-    </Box>
+        {/* Mobile Category Menu */}
+        <Drawer
+          anchor="left"
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        >
+          <Box sx={{ width: 250 }}>
+            <CategorySidebar />
+          </Box>
+        </Drawer>
+      </Box>
+    </Suspense>
   );
 }
