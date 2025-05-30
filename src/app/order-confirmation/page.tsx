@@ -1,45 +1,68 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Paper } from "@mui/material";
-import { useRouter, useSearchParams } from "next/navigation";
 
-export default function OrderConfirmationPage() {
+import React, { Suspense } from "react";
+import { Box, Typography, Paper, Button } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+
+function OrderConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [seconds, setSeconds] = useState(15);
-
-  useEffect(() => {
-    if (seconds === 0) {
-      router.push("/");
-    }
-    const timer = setTimeout(() => setSeconds((s) => s - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [seconds, router]);
-
-  // Optionally, show which products were removed
-  // const removedIds = searchParams.get("removed")?.split(",") || [];
+  const removedIds = searchParams.get("removedIds")?.split(",") || [];
 
   return (
-    <Box sx={{ p: 3, maxWidth: 500, margin: "40px auto" }}>
-      <Paper sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="h4" color="success.main" gutterBottom>
-          Order Placed Successfully!
+    <Box sx={{ p: 3, maxWidth: 600, margin: "0 auto" }}>
+      <Paper
+        sx={{
+          p: 4,
+          textAlign: "center",
+          borderRadius: 2,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Typography variant="h4" gutterBottom color="primary">
+          Đặt hàng thành công!
         </Typography>
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Thank you for your purchase. Your order has been confirmed.
+        <Typography variant="body1" paragraph>
+          Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đã được xác nhận.
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          You will be redirected to the home page in {seconds} seconds...
+        <Typography variant="body2" color="text.secondary" paragraph>
+          Mã đơn hàng: {Date.now().toString().slice(-6)}
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ backgroundColor: "#51B545", color: "white" }}
-          onClick={() => router.push("/")}
-        >
-          Back to Home
-        </Button>
+        <Box sx={{ mt: 4 }}>
+          <Link href="/" passHref>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                mr: 2,
+                backgroundColor: "#51B545",
+                "&:hover": {
+                  backgroundColor: "#45a03a",
+                },
+              }}
+            >
+              Tiếp tục mua sắm
+            </Button>
+          </Link>
+        </Box>
       </Paper>
     </Box>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense
+      fallback={
+        <Box sx={{ p: 3, maxWidth: 600, margin: "0 auto" }}>
+          <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
+            <Typography>Loading...</Typography>
+          </Paper>
+        </Box>
+      }
+    >
+      <OrderConfirmationContent />
+    </Suspense>
   );
 }
