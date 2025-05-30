@@ -39,6 +39,7 @@ interface CartItem extends Product {
 function HomePageContent() {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isSmDown = useMediaQuery(theme.breakpoints.down("md"));
   const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>(dishes);
@@ -89,12 +90,32 @@ function HomePageContent() {
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       {/* Main Content */}
       <Container sx={{ flex: 1, py: 3 }}>
-        <Box sx={{ display: "flex", gap: 3 }}>
+        <Box sx={{ display: "flex", gap: 3, position: "relative" }}>
           {/* Category Sidebar - Desktop */}
           {isMdUp && (
             <Box sx={{ width: 280, flexShrink: 0 }}>
               <CategorySidebar />
             </Box>
+          )}
+
+          {/* Hamburger menu icon for mobile/tablet (right side) */}
+          {isSmDown && (
+            <IconButton
+              onClick={() => setMobileMenuOpen(true)}
+              sx={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                zIndex: 2,
+                background: "#fff",
+                boxShadow: 1,
+                borderRadius: 2,
+                m: 1,
+              }}
+              aria-label="Open category filter"
+            >
+              <MenuIcon />
+            </IconButton>
           )}
 
           {/* Product Grid */}
@@ -138,11 +159,12 @@ function HomePageContent() {
         </Box>
       </Container>
 
-      {/* Mobile Category Menu */}
+      {/* Mobile Category Menu (right side) */}
       <Drawer
-        anchor="left"
+        anchor="right"
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        sx={{ display: isSmDown ? "block" : "none" }}
       >
         <Box sx={{ width: 250 }}>
           <CategorySidebar />

@@ -14,6 +14,9 @@ import {
   Button,
   TextField,
   Divider,
+  useMediaQuery,
+  useTheme,
+  CircularProgress,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -22,13 +25,19 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from "@mui/icons-material";
 import { useCart } from "@/context/CartContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleQuantityChange = (id: string, change: number) => {
     const item = cartItems.find((item) => item.id === id);
@@ -37,27 +46,15 @@ const CartPage = () => {
     }
   };
 
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      setSelectedItems(new Set(cartItems.map((item) => item.id)));
-    } else {
-      setSelectedItems(new Set());
+  const handleQuantityInputChange = (id: string, value: string) => {
+    const newQuantity = parseInt(value);
+    if (!isNaN(newQuantity) && newQuantity > 0) {
+      updateQuantity(id, newQuantity);
     }
-  };
-
-  const handleSelectItem = (id: string) => {
-    const newSelected = new Set(selectedItems);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedItems(newSelected);
   };
 
   const handleDeleteAll = () => {
-    cartItems.forEach((item) => removeFromCart(item.id));
-    setSelectedItems(new Set());
+    clearCart();
   };
 
   const calculateItemTotal = (price: number, quantity: number) => {
@@ -65,15 +62,29 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    clearCart();
     router.push("/checkout");
   };
 
-  // Calculate total price directly from cartItems
+  // Calculate total price for all items
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  if (!isClient) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -114,6 +125,10 @@ const CartPage = () => {
           justifyContent: "space-between",
           alignItems: "center",
           mb: 2,
+          p: 2,
+          borderRadius: 2,
+          backgroundColor: "#fff",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
         }}
       >
         <Typography variant="h4">Shopping Cart</Typography>
@@ -126,6 +141,7 @@ const CartPage = () => {
             backgroundColor: "#d32f2f",
             color: "white",
             boxShadow: "0 4px 12px rgba(211, 47, 47, 0.2)",
+            borderRadius: 2,
             "&:hover": {
               backgroundColor: "#b71c1c",
               boxShadow: "0 6px 16px rgba(211, 47, 47, 0.3)",
@@ -136,132 +152,191 @@ const CartPage = () => {
         </Button>
       </Box>
 
-      <TableContainer
-        component={Paper}
+      <Box
         sx={{
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          borderRadius: 2,
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: 3,
         }}
       >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  onChange={handleSelectAll}
-                  checked={
-                    selectedItems.size === cartItems.length &&
-                    cartItems.length > 0
-                  }
-                  indeterminate={
-                    selectedItems.size > 0 &&
-                    selectedItems.size < cartItems.length
-                  }
-                />
-              </TableCell>
-              <TableCell>Product</TableCell>
-              <TableCell align="right">Price</TableCell>
-              <TableCell align="center">Quantity</TableCell>
-              <TableCell align="right">Total</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {cartItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedItems.has(item.id)}
-                    onChange={() => handleSelectItem(item.id)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography variant="subtitle1">{item.name}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  {item.price.toLocaleString("vi-VN")} ₫
-                </TableCell>
-                <TableCell align="center">
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <IconButton
-                      size="small"
-                      onClick={() => handleQuantityChange(item.id, -1)}
-                      sx={{
-                        backgroundColor: "#f5f5f5",
-                        "&:hover": {
-                          backgroundColor: "#e0e0e0",
-                        },
-                      }}
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <TextField
-                      value={item.quantity}
-                      size="small"
-                      sx={{ width: "60px", mx: 1 }}
-                      inputProps={{ min: 1, style: { textAlign: "center" } }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={() => handleQuantityChange(item.id, 1)}
-                      sx={{
-                        backgroundColor: "#f5f5f5",
-                        "&:hover": {
-                          backgroundColor: "#e0e0e0",
-                        },
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  {calculateItemTotal(item.price, item.quantity)}
-                </TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    color="error"
-                    onClick={() => removeFromCart(item.id)}
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "rgba(211, 47, 47, 0.1)",
-                      },
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-        <Paper
+        <TableContainer
+          component={Paper}
           sx={{
-            p: 2,
-            minWidth: 300,
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             borderRadius: 2,
+            flex: 1,
+            border: "1px solid #e0e0e0",
+            overflow: "hidden",
           }}
         >
-          <Typography variant="h6" gutterBottom>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#f8f9fa" }}>
+                <TableCell sx={{ borderBottom: "2px solid #e0e0e0" }}>
+                  Product
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ borderBottom: "2px solid #e0e0e0" }}
+                >
+                  Price
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{ borderBottom: "2px solid #e0e0e0" }}
+                >
+                  Quantity
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ borderBottom: "2px solid #e0e0e0" }}
+                >
+                  Total
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ borderBottom: "2px solid #e0e0e0" }}
+                >
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {cartItems.map((item) => (
+                <TableRow
+                  key={item.id}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#f8f9fa",
+                    },
+                  }}
+                >
+                  <TableCell>
+                    <Box>
+                      <Typography variant="subtitle1">{item.name}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    {item.price.toLocaleString("vi-VN")} ₫
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={() => handleQuantityChange(item.id, -1)}
+                        sx={{
+                          backgroundColor: "#51B545",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(81,181,69,0.10)",
+                          mx: 0.5,
+                          borderRadius: 1,
+                          "&:hover": {
+                            backgroundColor: "#45a03a",
+                            boxShadow: "0 4px 16px rgba(81,181,69,0.18)",
+                          },
+                        }}
+                        disabled={item.quantity <= 1}
+                      >
+                        <RemoveIcon />
+                      </IconButton>
+                      <TextField
+                        value={item.quantity}
+                        size="small"
+                        onChange={(e) =>
+                          handleQuantityInputChange(item.id, e.target.value)
+                        }
+                        sx={{
+                          width: "60px",
+                          mx: 1,
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: 1,
+                            "& fieldset": {
+                              borderColor: "#e0e0e0",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#51B545",
+                            },
+                          },
+                        }}
+                        inputProps={{
+                          min: 1,
+                          style: { textAlign: "center" },
+                          type: "number",
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() => handleQuantityChange(item.id, 1)}
+                        sx={{
+                          backgroundColor: "#51B545",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(81,181,69,0.10)",
+                          mx: 0.5,
+                          borderRadius: 1,
+                          "&:hover": {
+                            backgroundColor: "#45a03a",
+                            boxShadow: "0 4px 16px rgba(81,181,69,0.18)",
+                          },
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    {calculateItemTotal(item.price, item.quantity)}
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      color="error"
+                      onClick={() => removeFromCart(item.id)}
+                      sx={{
+                        borderRadius: 1,
+                        "&:hover": {
+                          backgroundColor: "rgba(211, 47, 47, 0.1)",
+                        },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Paper
+          sx={{
+            p: 3,
+            width: isMobile ? "100%" : 350,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            borderRadius: 2,
+            alignSelf: isMobile ? "stretch" : "flex-start",
+            backgroundColor: "#f8f9fa",
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <Typography variant="h5" gutterBottom fontWeight={700}>
             Order Summary
           </Typography>
-          <Divider sx={{ my: 1 }} />
+          <Divider sx={{ my: 2 }} />
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-            <Typography variant="subtitle1">Grand Total:</Typography>
-            <Typography variant="subtitle1">
-              {totalPrice.toLocaleString("vi-VN")} đ
+            <Typography variant="subtitle1">Total Items:</Typography>
+            <Typography variant="subtitle1" fontWeight={600}>
+              {cartItems.length}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+            <Typography variant="h6">Grand Total:</Typography>
+            <Typography variant="h6" fontWeight={700} color="#51B545">
+              {totalPrice.toLocaleString("vi-VN")} ₫
             </Typography>
           </Box>
           <Button
@@ -269,18 +344,16 @@ const CartPage = () => {
             color="primary"
             fullWidth
             onClick={handleCheckout}
-            disabled={cartItems.length === 0}
             sx={{
               backgroundColor: "#51B545",
               color: "white",
               boxShadow: "0 4px 12px rgba(81, 181, 69, 0.2)",
+              py: 1.5,
+              fontSize: "1.1rem",
+              borderRadius: 2,
               "&:hover": {
                 backgroundColor: "#45a03a",
                 boxShadow: "0 6px 16px rgba(81, 181, 69, 0.3)",
-              },
-              "&.Mui-disabled": {
-                backgroundColor: "#cccccc",
-                color: "#ffffff",
               },
             }}
           >

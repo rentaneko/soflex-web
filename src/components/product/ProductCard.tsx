@@ -48,7 +48,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <Card
-      onClick={handleCardClick}
       sx={{
         borderRadius: 4,
         boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
@@ -69,6 +68,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       }}
     >
       <CardMedia
+        onClick={handleCardClick}
         component="img"
         image={image}
         alt={name}
@@ -82,10 +82,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }}
       />
       <CardContent sx={{ width: "100%", textAlign: "center", p: 0 }}>
-        <Typography variant="h5" fontWeight={700} sx={{ mt: 2, mb: 1 }}>
+        <Typography
+          onClick={handleCardClick}
+          variant="h5"
+          fontWeight={700}
+          sx={{ mt: 2, mb: 1 }}
+        >
           {name}
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography
+          onClick={handleCardClick}
+          variant="body1"
+          color="text.secondary"
+          sx={{ mb: 2 }}
+        >
           {description}
         </Typography>
         <Typography variant="h5" fontWeight={700} sx={{ mb: 3, color: "#222" }}>
