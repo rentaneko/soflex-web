@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   AppBar as MuiAppBar,
   Box,
@@ -27,20 +27,16 @@ import categories from "@/data/categories";
 import { useCategory } from "@/context/CategoryContext";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import dynamic from "next/dynamic";
 
-export default function AppBar() {
+const AppBar = () => {
   const { searchQuery, setSearchQuery } = useSearch();
   const { totalItems } = useCart();
   const { setSelectedCategory } = useCategory();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isSmDown = useMediaQuery(theme.breakpoints.down("md"));
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -81,6 +77,10 @@ export default function AppBar() {
             alignItems: "center",
             py: 2,
             backgroundColor: "#51B545",
+            position: "sticky",
+            top: 0,
+            zIndex: 1300,
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           }}
         >
           <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
@@ -99,8 +99,22 @@ export default function AppBar() {
         </Box>
       )}
 
-      <MuiAppBar position="static">
-        <Toolbar sx={{ px: { xs: 1.5, sm: 1.5 } }}>
+      <MuiAppBar
+        position="sticky"
+        sx={{
+          top: 0,
+          zIndex: 1200,
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Toolbar
+          sx={{
+            px: { xs: 3, sm: 3, md: 3.75 }, // 24px on mobile, 30px on desktop
+            maxWidth: "1440px",
+            margin: "0 auto",
+            width: "100%",
+          }}
+        >
           {/* Large Screens Layout (md and up) */}
           {!isSmDown && (
             <Box
@@ -108,6 +122,7 @@ export default function AppBar() {
                 display: "flex",
                 width: "100%",
                 alignItems: "center",
+                gap: 3, // 24px gap between sections
               }}
             >
               {/* Left Section (1) - Logo */}
@@ -145,7 +160,6 @@ export default function AppBar() {
                   flex: 2,
                   display: "flex",
                   justifyContent: "center",
-                  px: 2,
                 }}
               >
                 <form
@@ -191,15 +205,12 @@ export default function AppBar() {
                   color="inherit"
                   onClick={handleCartClick}
                 >
-                  {isClient && (
-                    <Badge
-                      badgeContent={totalItems > 99 ? "99+" : totalItems}
-                      color="error"
-                    >
-                      <ShoppingCartIcon />
-                    </Badge>
-                  )}
-                  {!isClient && <ShoppingCartIcon />}
+                  <Badge
+                    badgeContent={totalItems > 99 ? "99+" : totalItems}
+                    color="error"
+                  >
+                    <ShoppingCartIcon />
+                  </Badge>
                 </IconButton>
               </Box>
             </Box>
@@ -250,7 +261,6 @@ export default function AppBar() {
                   flex: 1,
                   display: "flex",
                   justifyContent: "center",
-                  mx: 2,
                 }}
               >
                 <form onSubmit={handleSearchSubmit} style={{ width: "100%" }}>
@@ -286,15 +296,12 @@ export default function AppBar() {
                 color="inherit"
                 onClick={handleCartClick}
               >
-                {isClient && (
-                  <Badge
-                    badgeContent={totalItems > 99 ? "99+" : totalItems}
-                    color="error"
-                  >
-                    <ShoppingCartIcon />
-                  </Badge>
-                )}
-                {!isClient && <ShoppingCartIcon />}
+                <Badge
+                  badgeContent={totalItems > 99 ? "99+" : totalItems}
+                  color="error"
+                >
+                  <ShoppingCartIcon />
+                </Badge>
               </IconButton>
             </Box>
           )}
@@ -302,4 +309,8 @@ export default function AppBar() {
       </MuiAppBar>
     </Box>
   );
-}
+};
+
+export default dynamic(() => Promise.resolve(AppBar), {
+  ssr: false,
+});

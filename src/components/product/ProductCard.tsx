@@ -31,7 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart({ id, name, price, quantity: 1, image });
+    addToCart({ id, name, price, quantity: 1, image, description });
   };
 
   const handleQuantityChange = (change: number, e: React.MouseEvent) => {
@@ -61,32 +61,62 @@ const ProductCard: React.FC<ProductCardProps> = ({
         background: "#fff",
         transition: "box-shadow 0.2s, transform 0.2s",
         cursor: "pointer",
+        height: 400,
+        justifyContent: "flex-start",
         "&:hover": {
           boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
           transform: "translateY(-2px)",
         },
       }}
     >
-      <CardMedia
-        onClick={handleCardClick}
-        component="img"
-        image={image}
-        alt={name}
+      <Box
         sx={{
-          width: "70%",
-          height: 180,
-          objectFit: "contain",
-          mx: "auto",
-          mt: 2,
+          width: "100%",
+          height: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           mb: 1,
+          mt: 2,
         }}
-      />
-      <CardContent sx={{ width: "100%", textAlign: "center", p: 0 }}>
+      >
+        <CardMedia
+          onClick={handleCardClick}
+          component="img"
+          image={image}
+          alt={name}
+          sx={{
+            maxHeight: "100%",
+            maxWidth: "100%",
+            width: "auto",
+            height: "auto",
+            objectFit: "contain",
+            cursor: "pointer",
+          }}
+        />
+      </Box>
+      <CardContent
+        sx={{
+          width: "100%",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-start",
+          p: 0,
+        }}
+      >
         <Typography
           onClick={handleCardClick}
-          variant="h5"
-          fontWeight={700}
-          sx={{ mt: 2, mb: 1 }}
+          variant="h6"
+          sx={{
+            fontSize: "20px",
+            mb: 1,
+            fontWeight: 600,
+            cursor: "pointer",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
         >
           {name}
         </Typography>
@@ -94,11 +124,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
           onClick={handleCardClick}
           variant="body1"
           color="text.secondary"
-          sx={{ mb: 2 }}
+          sx={{
+            fontSize: "18px",
+            mb: 2,
+            height: "54px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            cursor: "pointer",
+          }}
         >
           {description}
         </Typography>
-        <Typography variant="h5" fontWeight={700} sx={{ mb: 3, color: "#222" }}>
+        <Typography
+          variant="h6"
+          sx={{ fontSize: "20px", mb: 3, color: "#222", fontWeight: 700 }}
+        >
           {price.toLocaleString("vi-VN")} ₫
         </Typography>
         {cartItem ? (
@@ -133,7 +176,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </Button>
             <Typography
               variant="h6"
-              sx={{ mx: 1, minWidth: 32, textAlign: "center" }}
+              sx={{
+                mx: 1,
+                minWidth: 32,
+                textAlign: "center",
+                fontSize: "18px",
+              }}
             >
               {cartItem.quantity}
             </Typography>
@@ -165,11 +213,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
             sx={{
               backgroundColor: "#51B545",
               color: "#fff",
-              fontWeight: 700,
-              fontSize: 20,
+              fontWeight: 600,
+              fontSize: "18px",
               borderRadius: 2,
               boxShadow: "0 2px 8px rgba(81,181,69,0.10)",
-              py: 1.2,
+              py: 1,
               mb: 2,
               "&:hover": {
                 backgroundColor: "#45a03a",

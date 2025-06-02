@@ -28,6 +28,7 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState("");
   const [payment, setPayment] = useState("cod");
   const [error, setError] = useState("");
+  const [fullName, setFullName] = useState("");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address.trim() || !phone.trim()) {
+    if (!fullName.trim() || !address.trim() || !phone.trim()) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -51,7 +52,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1200, margin: "0 auto" }}>
+    <Box sx={{ py: 3 }}>
       <Typography
         variant="h4"
         gutterBottom
@@ -65,6 +66,8 @@ export default function CheckoutPage() {
       >
         Checkout
       </Typography>
+      {/* Totals summary above product list */}
+
       <Box
         sx={{
           display: "flex",
@@ -87,6 +90,25 @@ export default function CheckoutPage() {
             Shipping Information
           </Typography>
           <form onSubmit={handlePlaceOrder}>
+            <TextField
+              label="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              fullWidth
+              required
+              margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 1,
+                  "& fieldset": {
+                    borderColor: "#e0e0e0",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#51B545",
+                  },
+                },
+              }}
+            />
             <TextField
               label="Full Address"
               value={address}
@@ -190,6 +212,20 @@ export default function CheckoutPage() {
             Order Summary
           </Typography>
           <Divider sx={{ my: 2 }} />
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="h6">Total Items:</Typography>
+            <Typography variant="h6" fontWeight={600}>
+              {cartItems.length}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+            <Typography variant="h6">Grand Total:</Typography>
+            <Typography variant="h6" fontWeight={700} color="#51B545">
+              {total.toLocaleString("vi-VN")} ₫
+            </Typography>
+          </Box>
+
+          <Divider sx={{ my: 2 }} />
           {cartItems.map((item) => (
             <Box
               key={item.id}
@@ -210,19 +246,6 @@ export default function CheckoutPage() {
               </Box>
             </Box>
           ))}
-          <Divider sx={{ my: 2 }} />
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-            <Typography variant="h6">Total Items:</Typography>
-            <Typography variant="h6" fontWeight={600}>
-              {cartItems.length}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-            <Typography variant="h6">Grand Total:</Typography>
-            <Typography variant="h6" fontWeight={700} color="#51B545">
-              {total.toLocaleString("vi-VN")} ₫
-            </Typography>
-          </Box>
           {/* On mobile, show Place Order button here */}
           {isMobile && (
             <Button

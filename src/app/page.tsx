@@ -1,18 +1,14 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
-  Paper,
   Typography,
   useMediaQuery,
   useTheme,
   Drawer,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
+  CircularProgress,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useSearchParams } from "next/navigation";
@@ -21,6 +17,7 @@ import { useRouter } from "next/navigation";
 import dishes from "@/data/products";
 import CategorySidebar from "@/components/common/CategorySidebar";
 import ProductCard from "@/components/product/ProductCard";
+import dynamic from "next/dynamic";
 
 interface Product {
   id: string;
@@ -87,77 +84,57 @@ function HomePageContent() {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      {/* Main Content */}
-      <Container sx={{ flex: 1, py: 3 }}>
-        <Box sx={{ display: "flex", gap: 3, position: "relative" }}>
-          {/* Category Sidebar - Desktop */}
-          {isMdUp && (
-            <Box sx={{ width: 280, flexShrink: 0 }}>
-              <CategorySidebar />
-            </Box>
-          )}
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Box sx={{ display: "flex", gap: 3, minWidth: 0 }}>
+        {/* Category Sidebar - Desktop */}
+        {isMdUp && (
+          <Box sx={{ width: 280, flexShrink: 0 }}>
+            <CategorySidebar />
+          </Box>
+        )}
 
-          {/* Hamburger menu icon for mobile/tablet (right side) */}
-          {isSmDown && (
-            <IconButton
-              onClick={() => setMobileMenuOpen(true)}
-              sx={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                zIndex: 2,
-                background: "#fff",
-                boxShadow: 1,
-                borderRadius: 2,
-                m: 1,
-              }}
-              aria-label="Open category filter"
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-
-          {/* Product Grid */}
-          <Box sx={{ flex: 1 }}>
-            <Box
-              sx={{
-                display: "grid",
-                gap: 2,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
-                },
-              }}
-            >
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  description={product.description}
-                  image={product.image}
-                />
-              ))}
-              {products.length === 0 && (
-                <Box
-                  sx={{
-                    gridColumn: "1/-1",
-                    textAlign: "center",
-                    py: 4,
-                  }}
-                >
-                  <Typography variant="h6" color="text.secondary">
-                    Không tìm thấy sản phẩm nào
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+        {/* Product Grid */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 3,
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, minmax(0, 1fr))",
+                md: "repeat(3, minmax(0, 1fr))",
+                lg: "repeat(3, minmax(0, 1fr))",
+              },
+              width: "100%",
+              minHeight: 300,
+            }}
+          >
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                description={product.description}
+                image={product.image}
+              />
+            ))}
+            {products.length === 0 && (
+              <Box
+                sx={{
+                  gridColumn: "1/-1",
+                  textAlign: "center",
+                  py: 4,
+                }}
+              >
+                <Typography variant="h6" color="text.secondary">
+                  Không tìm thấy sản phẩm nào
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
-      </Container>
+      </Box>
 
       {/* Mobile Category Menu (right side) */}
       <Drawer
@@ -170,14 +147,38 @@ function HomePageContent() {
           <CategorySidebar />
         </Box>
       </Drawer>
-    </Box>
+    </Container>
   );
 }
 
-export default function HomePage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <HomePageContent />
-    </Suspense>
-  );
-}
+// Create a client-side only wrapper component
+const HomePage = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return <HomePageContent />;
+};
+
+const DynamicHomePage = dynamic(() => Promise.resolve(HomePage), {
+  ssr: false,
+});
+
+export default DynamicHomePage;
